@@ -82,7 +82,10 @@ export function AdminDashboard({
           <div className="flex items-center gap-4">
             <span className="text-sm text-zinc-500">{userEmail}</span>
             <button
-              onClick={() => signOut({ redirect: true, callbackUrl: `${window.location.origin}/admin` })}
+              onClick={async () => {
+                await signOut({ redirect: false });
+                window.location.href = "/admin";
+              }}
               className="flex items-center gap-2 px-3 py-1.5 text-sm text-zinc-400 hover:text-white transition-colors"
             >
               <LogOut className="w-4 h-4" />
