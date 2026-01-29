@@ -92,6 +92,7 @@ async function seed() {
 <p><strong>Fix:</strong> Add brief notes to each work sample explaining your thinking and approach.</p>
 
 <h3>5. Generic Responses</h3>
+<p>In a column asking for links to the specific types of replies we're looking for, someone wrote:</p>
 <blockquote>
 "Perfect that's a well-rounded audience mix. Targeting both large and small creators alongside marketers, founders, and communities will help us build diverse engagement and stronger network visibility."
 </blockquote>

@@ -4,9 +4,10 @@ import { eq } from "drizzle-orm";
 import { notFound } from "next/navigation";
 import { Header } from "@/components/ui/header";
 import { Footer } from "@/components/ui/footer";
-import { ArrowLeft, ExternalLink, Calendar, User } from "lucide-react";
+import { ArrowLeft, Calendar, User } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
+import { ShareButton } from "./share-button";
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -53,7 +54,7 @@ export default async function ResourcePage({ params }: PageProps) {
 
       <Header />
 
-      <main className="relative pt-24 pb-16 px-6">
+      <main className="relative pt-28 pb-16 px-6">
         <article className="max-w-3xl mx-auto">
           {/* Back link */}
           <Link
@@ -61,7 +62,7 @@ export default async function ResourcePage({ params }: PageProps) {
             className="inline-flex items-center gap-2 text-sm text-zinc-500 hover:text-white transition-colors mb-8"
           >
             <ArrowLeft className="w-4 h-4" />
-            Back to Resources
+            Back
           </Link>
 
           {/* Header */}
@@ -121,18 +122,8 @@ export default async function ResourcePage({ params }: PageProps) {
             </div>
           )}
 
-          {/* External link button */}
-          {resource.externalUrl && (
-            <a
-              href={resource.externalUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-white text-black font-medium hover:bg-zinc-200 transition-colors mb-10"
-            >
-              Open Resource
-              <ExternalLink className="w-4 h-4" />
-            </a>
-          )}
+          {/* Share on X button */}
+          <ShareButton title={resource.title} slug={resource.slug} />
 
           {/* Content */}
           {resource.content && (

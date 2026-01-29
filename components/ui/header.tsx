@@ -12,35 +12,27 @@ export function Header() {
       transition={{ duration: 0.5 }}
       className="fixed top-0 left-0 right-0 z-50 border-b border-zinc-800/50 bg-black/80 backdrop-blur-xl"
     >
-      <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
-        <Link href="/" className="flex items-center gap-3">
+      <div className="max-w-6xl mx-auto px-6 h-20 flex items-center justify-between">
+        <Link href="/" className="flex items-center gap-4">
           <Image
             src="/logo.png"
             alt="Stack Daily"
-            width={120}
-            height={32}
-            className="h-8 w-auto"
+            width={180}
+            height={48}
+            className="h-12 w-auto"
             priority
           />
-          <span className="text-zinc-500 text-sm font-light">/ learn</span>
+          <span className="text-zinc-600 text-sm tracking-wide">/ learn</span>
         </Link>
 
-        <nav className="flex items-center gap-6">
-          <Link
-            href="/"
-            className="text-sm text-zinc-400 hover:text-white transition-colors"
-          >
-            Resources
-          </Link>
-          <a
-            href="https://t.me/stackdaily"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-sm px-4 py-2 rounded-full bg-zinc-900 text-zinc-300 hover:bg-zinc-800 hover:text-white transition-all border border-zinc-800"
-          >
-            Join Community
-          </a>
-        </nav>
+        <a
+          href="https://t.me/stackdaily"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-sm px-5 py-2.5 rounded-full bg-white text-black font-medium hover:bg-zinc-200 transition-all"
+        >
+          Join Inner Circle
+        </a>
       </div>
     </motion.header>
   );

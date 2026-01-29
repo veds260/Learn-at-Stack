@@ -4,6 +4,7 @@ import { eq, desc } from "drizzle-orm";
 import { Header } from "@/components/ui/header";
 import { Footer } from "@/components/ui/footer";
 import { ResourceCard } from "@/components/ui/resource-card";
+import Image from "next/image";
 
 export const dynamic = "force-dynamic";
 
@@ -40,16 +41,20 @@ export default async function HomePage() {
 
       <Header />
 
-      <main className="relative pt-32 pb-16 px-6">
+      <main className="relative pt-36 pb-16 px-6">
         <div className="max-w-6xl mx-auto">
           {/* Hero */}
-          <div className="text-center mb-16">
-            <h1 className="text-4xl md:text-5xl font-light tracking-tight mb-4">
-              Stack Daily{" "}
-              <span className="text-red-500">Resources</span>
-            </h1>
-            <p className="text-zinc-500 text-lg max-w-xl mx-auto font-light">
-              Guides, templates, and insights to help you stand out and land premium opportunities.
+          <div className="text-center mb-20">
+            <Image
+              src="/logo.png"
+              alt="Stack Daily"
+              width={280}
+              height={75}
+              className="mx-auto mb-8 h-16 w-auto"
+              priority
+            />
+            <p className="text-zinc-500 text-lg max-w-md mx-auto font-light tracking-wide">
+              Insider knowledge for the Inner Circle
             </p>
           </div>
 
@@ -72,9 +77,9 @@ export default async function HomePage() {
             </div>
           ) : (
             <div className="text-center py-20">
-              <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-zinc-900/50 flex items-center justify-center">
+              <div className="w-20 h-20 mx-auto mb-6 rounded-2xl bg-zinc-900/50 border border-zinc-800/50 flex items-center justify-center">
                 <svg
-                  className="w-10 h-10 text-zinc-700"
+                  className="w-8 h-8 text-zinc-600"
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
@@ -87,11 +92,8 @@ export default async function HomePage() {
                   />
                 </svg>
               </div>
-              <h2 className="text-xl font-light text-zinc-400 mb-2">
-                Resources coming soon
-              </h2>
-              <p className="text-zinc-600 text-sm">
-                Join our community to get notified when new resources drop.
+              <p className="text-zinc-500 font-light">
+                New resources dropping soon
               </p>
             </div>
           )}

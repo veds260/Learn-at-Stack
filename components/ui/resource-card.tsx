@@ -24,6 +24,14 @@ const typeIcons: Record<string, React.ReactNode> = {
   download: <Download className="w-4 h-4" />,
 };
 
+const largeTypeIcons: Record<string, React.ReactNode> = {
+  guide: <BookOpen className="w-10 h-10" />,
+  video: <Video className="w-10 h-10" />,
+  document: <FileText className="w-10 h-10" />,
+  link: <LinkIcon className="w-10 h-10" />,
+  download: <Download className="w-10 h-10" />,
+};
+
 export function ResourceCard({
   title,
   description,
@@ -50,7 +58,7 @@ export function ResourceCard({
         </div>
 
         {/* Thumbnail */}
-        <div className="relative aspect-video w-full overflow-hidden bg-zinc-900">
+        <div className="relative aspect-video w-full overflow-hidden">
           {thumbnail ? (
             <Image
               src={thumbnail}
@@ -59,9 +67,17 @@ export function ResourceCard({
               className="object-cover transition-transform duration-500 group-hover:scale-105"
             />
           ) : (
-            <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-zinc-900 to-zinc-950">
-              <div className="w-16 h-16 rounded-full bg-zinc-800/50 flex items-center justify-center text-zinc-600">
-                {typeIcons[type] || <FileText className="w-8 h-8" />}
+            <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-zinc-900 via-zinc-900 to-black">
+              {/* Decorative grid pattern */}
+              <div className="absolute inset-0 opacity-[0.03]" style={{
+                backgroundImage: `linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)`,
+                backgroundSize: '32px 32px'
+              }} />
+              {/* Red accent orb */}
+              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-32 h-32 bg-red-500/10 rounded-full blur-3xl" />
+              {/* Icon */}
+              <div className="relative z-10 w-20 h-20 rounded-2xl bg-zinc-800/30 border border-zinc-700/30 flex items-center justify-center text-zinc-500 backdrop-blur-sm">
+                {largeTypeIcons[type] || <FileText className="w-10 h-10" />}
               </div>
             </div>
           )}
