@@ -7,7 +7,7 @@ export function Footer() {
     <footer className="border-t border-zinc-800/50 mt-20">
       <div className="max-w-6xl mx-auto px-6 py-8 flex flex-col sm:flex-row items-center justify-between gap-4">
         <p className="text-sm text-zinc-600">
-          Stack Daily Inner Circle
+          Stack Daily
         </p>
         <div className="flex items-center gap-6">
           <a
@@ -24,7 +24,7 @@ export function Footer() {
             rel="noopener noreferrer"
             className="text-sm text-zinc-500 hover:text-white transition-colors"
           >
-            Twitter
+            X
           </a>
           <Link
             href="/admin"

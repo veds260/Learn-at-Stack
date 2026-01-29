@@ -5,6 +5,7 @@ import StarterKit from "@tiptap/starter-kit";
 import Placeholder from "@tiptap/extension-placeholder";
 import Link from "@tiptap/extension-link";
 import Image from "@tiptap/extension-image";
+import { useRef, useState } from "react";
 import {
   Bold,
   Italic,
@@ -17,7 +18,8 @@ import {
   Undo,
   Redo,
   Minus,
-  ImageIcon,
+  Upload,
+  Loader2,
 } from "lucide-react";
 
 interface RichTextEditorProps {
@@ -31,6 +33,72 @@ export function RichTextEditor({
   onChange,
   placeholder = "Start writing...",
 }: RichTextEditorProps) {
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [uploading, setUploading] = useState(false);
+
+  const uploadImage = async (file: File): Promise<string | null> => {
+    const formData = new FormData();
+    formData.append("file", file);
+
+    try {
+      const response = await fetch("/api/upload", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        alert(error.error || "Upload failed");
+        return null;
+      }
+
+      const data = await response.json();
+      return data.url;
+    } catch (error) {
+      console.error("Upload error:", error);
+      alert("Failed to upload image");
+      return null;
+    }
+  };
+
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !editor) return;
+
+    setUploading(true);
+    const url = await uploadImage(file);
+    setUploading(false);
+
+    if (url) {
+      editor.chain().focus().setImage({ src: url }).run();
+    }
+
+    // Reset input
+    e.target.value = "";
+  };
+
+  const handlePaste = async (e: React.ClipboardEvent) => {
+    const items = e.clipboardData?.items;
+    if (!items || !editor) return;
+
+    for (const item of items) {
+      if (item.type.startsWith("image/")) {
+        e.preventDefault();
+        const file = item.getAsFile();
+        if (!file) continue;
+
+        setUploading(true);
+        const url = await uploadImage(file);
+        setUploading(false);
+
+        if (url) {
+          editor.chain().focus().setImage({ src: url }).run();
+        }
+        return;
+      }
+    }
+  };
+
   const editor = useEditor({
     extensions: [
       StarterKit.configure({
@@ -62,6 +130,28 @@ export function RichTextEditor({
         class:
           "prose prose-invert prose-zinc max-w-none min-h-[300px] focus:outline-none px-4 py-3 prose-headings:font-light prose-h2:text-xl prose-h3:text-lg prose-p:text-zinc-400 prose-strong:text-white prose-blockquote:border-l-red-500/50 prose-blockquote:bg-zinc-800/50 prose-blockquote:py-2 prose-blockquote:px-4 prose-blockquote:rounded-r prose-blockquote:not-italic prose-blockquote:text-zinc-300",
       },
+      handlePaste: (view, event) => {
+        const items = event.clipboardData?.items;
+        if (!items) return false;
+
+        for (const item of items) {
+          if (item.type.startsWith("image/")) {
+            event.preventDefault();
+            const file = item.getAsFile();
+            if (!file) continue;
+
+            setUploading(true);
+            uploadImage(file).then((url) => {
+              setUploading(false);
+              if (url && editor) {
+                editor.chain().focus().setImage({ src: url }).run();
+              }
+            });
+            return true;
+          }
+        }
+        return false;
+      },
     },
   });
 
@@ -76,33 +166,29 @@ export function RichTextEditor({
     }
   };
 
-  const addImage = () => {
-    const url = window.prompt("Enter image URL:");
-    if (url) {
-      editor.chain().focus().setImage({ src: url }).run();
-    }
-  };
-
   const ToolbarButton = ({
     onClick,
     isActive,
     children,
     title,
+    disabled,
   }: {
     onClick: () => void;
     isActive?: boolean;
     children: React.ReactNode;
     title: string;
+    disabled?: boolean;
   }) => (
     <button
       type="button"
       onClick={onClick}
       title={title}
+      disabled={disabled}
       className={`p-2 rounded-lg transition-colors ${
         isActive
           ? "bg-zinc-700 text-white"
           : "text-zinc-400 hover:text-white hover:bg-zinc-800"
-      }`}
+      } ${disabled ? "opacity-50 cursor-not-allowed" : ""}`}
     >
       {children}
     </button>
@@ -110,6 +196,15 @@ export function RichTextEditor({
 
   return (
     <div className="border border-zinc-800 rounded-xl overflow-hidden bg-zinc-900/50">
+      {/* Hidden file input */}
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/*"
+        onChange={handleFileSelect}
+        className="hidden"
+      />
+
       {/* Toolbar */}
       <div className="flex flex-wrap items-center gap-1 p-2 border-b border-zinc-800 bg-zinc-900/80">
         <ToolbarButton
@@ -190,13 +285,22 @@ export function RichTextEditor({
         </ToolbarButton>
 
         <ToolbarButton
-          onClick={addImage}
-          title="Add Image"
+          onClick={() => fileInputRef.current?.click()}
+          title="Upload Image"
+          disabled={uploading}
         >
-          <ImageIcon className="w-4 h-4" />
+          {uploading ? (
+            <Loader2 className="w-4 h-4 animate-spin" />
+          ) : (
+            <Upload className="w-4 h-4" />
+          )}
         </ToolbarButton>
 
         <div className="flex-1" />
+
+        {uploading && (
+          <span className="text-xs text-zinc-500 mr-2">Uploading...</span>
+        )}
 
         <ToolbarButton
           onClick={() => editor.chain().focus().undo().run()}
@@ -215,6 +319,13 @@ export function RichTextEditor({
 
       {/* Editor */}
       <EditorContent editor={editor} />
+
+      {/* Help text */}
+      <div className="px-4 py-2 border-t border-zinc-800 bg-zinc-900/50">
+        <p className="text-xs text-zinc-600">
+          Tip: Paste images directly from clipboard or drag and drop
+        </p>
+      </div>
     </div>
   );
 }
