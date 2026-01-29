@@ -76,7 +76,7 @@ export default async function ResourcePage({ params }: PageProps) {
 
       <Header />
 
-      <main className="relative pt-28 pb-16 px-6">
+      <main className="relative pt-52 pb-16 px-6">
         <article className="max-w-3xl mx-auto">
           {/* Back link */}
           <Link

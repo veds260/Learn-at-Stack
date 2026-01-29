@@ -40,7 +40,7 @@ export default async function HomePage() {
 
       <Header />
 
-      <main className="relative pt-36 pb-16 px-6">
+      <main className="relative pt-52 pb-16 px-6">
         <div className="max-w-6xl mx-auto">
           {/* Hero */}
           <div className="text-center mb-20">
