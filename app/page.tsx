@@ -4,7 +4,6 @@ import { eq, desc } from "drizzle-orm";
 import { Header } from "@/components/ui/header";
 import { Footer } from "@/components/ui/footer";
 import { ResourceCard } from "@/components/ui/resource-card";
-import Image from "next/image";
 
 export const dynamic = "force-dynamic";
 
@@ -45,16 +44,11 @@ export default async function HomePage() {
         <div className="max-w-6xl mx-auto">
           {/* Hero */}
           <div className="text-center mb-20">
-            <Image
-              src="/logo.png"
-              alt="Stack Daily"
-              width={280}
-              height={75}
-              className="mx-auto mb-8 h-16 w-auto"
-              priority
-            />
+            <h1 className="text-4xl md:text-5xl font-light tracking-tight text-white mb-4">
+              Inner Circle
+            </h1>
             <p className="text-zinc-500 text-lg max-w-md mx-auto font-light tracking-wide">
-              Insider knowledge for the Inner Circle
+              Exclusive resources for members
             </p>
           </div>
 

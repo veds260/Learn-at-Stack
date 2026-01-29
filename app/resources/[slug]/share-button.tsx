@@ -9,7 +9,7 @@ export function ShareButton({ title, slug }: ShareButtonProps) {
   const baseUrl = typeof window !== "undefined" ? window.location.origin : "https://learn.stackdaily.xyz";
   const resourceUrl = `${baseUrl}/resources/${slug}`;
 
-  const tweetText = `Just learned something valuable from @stackdaily's Inner Circle
+  const tweetText = `Just learned something valuable from @stackdailyxyz's Inner Circle
 
 "${title}"
 

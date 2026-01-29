@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { X, Loader2 } from "lucide-react";
+import { X, Loader2, Video, FileText } from "lucide-react";
 import { createResource, updateResource, getResource } from "@/lib/actions";
 import { RichTextEditor } from "@/components/ui/rich-text-editor";
 
@@ -36,6 +36,7 @@ export function ResourceForm({
     categoryId: "",
     externalUrl: "",
     author: "",
+    videoUrl: "",
   });
 
   useEffect(() => {
@@ -53,6 +54,7 @@ export function ResourceForm({
             categoryId: resource.categoryId || "",
             externalUrl: resource.externalUrl || "",
             author: resource.author || "",
+            videoUrl: resource.videoUrl || "",
           });
         }
         setFetchingResource(false);
@@ -212,19 +214,47 @@ export function ResourceForm({
               />
             </div>
 
-            {/* Content */}
-            <div>
-              <label className="block text-sm text-zinc-400 mb-2">
-                Content
-              </label>
-              <RichTextEditor
-                content={formData.content}
-                onChange={(html) =>
-                  setFormData({ ...formData, content: html })
-                }
-                placeholder="Start writing your resource content..."
-              />
-            </div>
+            {/* Video URL - only for video type */}
+            {formData.type === "video" && (
+              <div>
+                <label className="block text-sm text-zinc-400 mb-2">
+                  <Video className="w-4 h-4 inline mr-2" />
+                  Video URL (YouTube, Vimeo, or direct link)
+                </label>
+                <input
+                  type="url"
+                  value={formData.videoUrl}
+                  onChange={(e) =>
+                    setFormData({ ...formData, videoUrl: e.target.value })
+                  }
+                  className="w-full px-4 py-3 bg-zinc-900/50 border border-zinc-800 rounded-xl text-white placeholder-zinc-600 focus:border-zinc-600 transition-colors"
+                  placeholder="https://youtube.com/watch?v=... or https://vimeo.com/..."
+                />
+                <p className="text-xs text-zinc-600 mt-2">
+                  Paste a YouTube, Vimeo, or direct video URL. The video will be embedded on the resource page.
+                </p>
+              </div>
+            )}
+
+            {/* Content - for guides, documents, and other types */}
+            {formData.type !== "link" && (
+              <div>
+                <label className="block text-sm text-zinc-400 mb-2">
+                  <FileText className="w-4 h-4 inline mr-2" />
+                  {formData.type === "video" ? "Additional Notes (optional)" : "Content"}
+                </label>
+                <RichTextEditor
+                  content={formData.content}
+                  onChange={(html) =>
+                    setFormData({ ...formData, content: html })
+                  }
+                  placeholder={formData.type === "video"
+                    ? "Add any additional notes, timestamps, or description for the video..."
+                    : "Start writing your resource content... Use the image button to add visuals."
+                  }
+                />
+              </div>
+            )}
 
             {/* Thumbnail URL */}
             <div>

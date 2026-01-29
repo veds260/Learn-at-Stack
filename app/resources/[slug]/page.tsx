@@ -24,6 +24,7 @@ async function getResource(slug: string) {
       thumbnail: resources.thumbnail,
       type: resources.type,
       externalUrl: resources.externalUrl,
+      videoUrl: resources.videoUrl,
       author: resources.author,
       published: resources.published,
       categoryName: categories.name,
@@ -35,6 +36,27 @@ async function getResource(slug: string) {
     .limit(1);
 
   return resource;
+}
+
+function getVideoEmbedUrl(url: string): string | null {
+  // YouTube
+  const youtubeMatch = url.match(/(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([a-zA-Z0-9_-]+)/);
+  if (youtubeMatch) {
+    return `https://www.youtube.com/embed/${youtubeMatch[1]}`;
+  }
+
+  // Vimeo
+  const vimeoMatch = url.match(/vimeo\.com\/(?:video\/)?(\d+)/);
+  if (vimeoMatch) {
+    return `https://player.vimeo.com/video/${vimeoMatch[1]}`;
+  }
+
+  // Direct video URL (mp4, webm, etc.)
+  if (url.match(/\.(mp4|webm|ogg)$/i)) {
+    return url;
+  }
+
+  return null;
 }
 
 export default async function ResourcePage({ params }: PageProps) {
@@ -121,6 +143,39 @@ export default async function ResourcePage({ params }: PageProps) {
               />
             </div>
           )}
+
+          {/* Video Player - for video type resources */}
+          {resource.type === "video" && resource.videoUrl && (() => {
+            const embedUrl = getVideoEmbedUrl(resource.videoUrl);
+            if (!embedUrl) return null;
+
+            // Check if it's a direct video file
+            if (embedUrl.match(/\.(mp4|webm|ogg)$/i)) {
+              return (
+                <div className="relative aspect-video w-full overflow-hidden rounded-2xl mb-10 bg-zinc-900 border border-zinc-800/50">
+                  <video
+                    src={embedUrl}
+                    controls
+                    className="w-full h-full object-contain"
+                  >
+                    Your browser does not support the video tag.
+                  </video>
+                </div>
+              );
+            }
+
+            // YouTube/Vimeo embed
+            return (
+              <div className="relative aspect-video w-full overflow-hidden rounded-2xl mb-10 bg-zinc-900 border border-zinc-800/50">
+                <iframe
+                  src={embedUrl}
+                  className="absolute inset-0 w-full h-full"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                />
+              </div>
+            );
+          })()}
 
           {/* Share on X button */}
           <ShareButton title={resource.title} slug={resource.slug} />

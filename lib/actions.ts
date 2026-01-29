@@ -14,6 +14,7 @@ interface ResourceData {
   type: string;
   categoryId: string;
   externalUrl: string;
+  videoUrl: string;
   author: string;
 }
 
@@ -43,6 +44,7 @@ export async function createResource(data: ResourceData) {
     type: data.type,
     categoryId: data.categoryId || null,
     externalUrl: data.externalUrl || null,
+    videoUrl: data.videoUrl || null,
     author: data.author || null,
   });
 
@@ -62,6 +64,7 @@ export async function updateResource(id: string, data: ResourceData) {
       type: data.type,
       categoryId: data.categoryId || null,
       externalUrl: data.externalUrl || null,
+      videoUrl: data.videoUrl || null,
       author: data.author || null,
       updatedAt: new Date(),
     })

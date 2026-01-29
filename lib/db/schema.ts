@@ -26,6 +26,7 @@ export const resources = pgTable("resources", {
   type: varchar("type", { length: 50 }).notNull().default("guide"),
   categoryId: uuid("category_id").references(() => categories.id),
   externalUrl: text("external_url"),
+  videoUrl: text("video_url"),
   author: varchar("author", { length: 100 }),
   published: timestamp("published").defaultNow(),
   createdAt: timestamp("created_at").defaultNow().notNull(),

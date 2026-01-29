@@ -4,6 +4,7 @@ import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Placeholder from "@tiptap/extension-placeholder";
 import Link from "@tiptap/extension-link";
+import Image from "@tiptap/extension-image";
 import {
   Bold,
   Italic,
@@ -16,6 +17,7 @@ import {
   Undo,
   Redo,
   Minus,
+  ImageIcon,
 } from "lucide-react";
 
 interface RichTextEditorProps {
@@ -45,6 +47,11 @@ export function RichTextEditor({
           class: "text-red-400 underline",
         },
       }),
+      Image.configure({
+        HTMLAttributes: {
+          class: "rounded-xl max-w-full h-auto my-4",
+        },
+      }),
     ],
     content,
     onUpdate: ({ editor }) => {
@@ -66,6 +73,13 @@ export function RichTextEditor({
     const url = window.prompt("Enter URL:");
     if (url) {
       editor.chain().focus().setLink({ href: url }).run();
+    }
+  };
+
+  const addImage = () => {
+    const url = window.prompt("Enter image URL:");
+    if (url) {
+      editor.chain().focus().setImage({ src: url }).run();
     }
   };
 
@@ -173,6 +187,13 @@ export function RichTextEditor({
           title="Add Link"
         >
           <LinkIcon className="w-4 h-4" />
+        </ToolbarButton>
+
+        <ToolbarButton
+          onClick={addImage}
+          title="Add Image"
+        >
+          <ImageIcon className="w-4 h-4" />
         </ToolbarButton>
 
         <div className="flex-1" />

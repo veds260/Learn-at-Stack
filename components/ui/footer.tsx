@@ -11,7 +11,7 @@ export function Footer() {
         </p>
         <div className="flex items-center gap-6">
           <a
-            href="https://t.me/stackdaily"
+            href="https://t.me/+q3abpE3xjGszMGQ1"
             target="_blank"
             rel="noopener noreferrer"
             className="text-sm text-zinc-500 hover:text-white transition-colors"
@@ -19,7 +19,7 @@ export function Footer() {
             Telegram
           </a>
           <a
-            href="https://x.com/stackdaily"
+            href="https://x.com/stackdailyxyz"
             target="_blank"
             rel="noopener noreferrer"
             className="text-sm text-zinc-500 hover:text-white transition-colors"
