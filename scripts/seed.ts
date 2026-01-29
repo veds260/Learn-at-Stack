@@ -1,6 +1,7 @@
 import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 import { hash } from "bcryptjs";
+import { eq } from "drizzle-orm";
 import * as schema from "../lib/db/schema";
 
 async function seed() {
@@ -51,7 +52,7 @@ async function seed() {
       const [existing] = await db
         .select()
         .from(schema.categories)
-        .where(schema.categories.slug.equals ? undefined : undefined)
+        .where(eq(schema.categories.slug, cat.slug))
         .limit(1);
       if (existing) categoryIds[cat.slug] = existing.id;
       console.log(`Category ${cat.name} already exists`);
