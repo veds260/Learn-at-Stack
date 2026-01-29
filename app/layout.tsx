@@ -16,8 +16,8 @@ export const metadata: Metadata = {
   title: "Learn | Stack Daily",
   description: "Premium resources for the Stack Daily community. Guides, templates, and insights to help you stand out.",
   icons: {
-    icon: "/logo.png",
-    apple: "/logo.png",
+    icon: "/logo-icon.png",
+    apple: "/logo-icon.png",
   },
   openGraph: {
     title: "Learn | Stack Daily",

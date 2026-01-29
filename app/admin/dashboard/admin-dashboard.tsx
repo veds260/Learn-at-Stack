@@ -70,7 +70,7 @@ export function AdminDashboard({
         <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-3">
             <Image
-              src="/logo.png"
+              src="/logo.jpg"
               alt="Stack Daily"
               width={180}
               height={48}
