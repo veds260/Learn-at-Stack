@@ -12,14 +12,14 @@ export function Header() {
       transition={{ duration: 0.5 }}
       className="fixed top-0 left-0 right-0 z-50 border-b border-zinc-800/50 bg-black/80 backdrop-blur-xl"
     >
-      <div className="max-w-6xl mx-auto px-6 h-44 flex items-center justify-between">
+      <div className="max-w-6xl mx-auto px-6 h-20 flex items-center justify-between">
         <Link href="/" className="flex items-center gap-4">
           <Image
             src="/logo.jpg"
             alt="Stack Daily"
-            width={540}
-            height={144}
-            className="h-36 w-auto"
+            width={180}
+            height={48}
+            className="h-12 w-auto"
             priority
           />
           <span className="text-zinc-600 text-sm tracking-wide">/ learn</span>
