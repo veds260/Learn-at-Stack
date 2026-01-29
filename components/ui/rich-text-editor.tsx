@@ -1,6 +1,6 @@
 "use client";
 
-import { useEditor, EditorContent } from "@tiptap/react";
+import { useEditor, EditorContent, NodeViewWrapper, NodeViewProps, ReactNodeViewRenderer } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Placeholder from "@tiptap/extension-placeholder";
 import Link from "@tiptap/extension-link";
@@ -20,7 +20,36 @@ import {
   Minus,
   Upload,
   Loader2,
+  X,
 } from "lucide-react";
+
+// Custom Image component with delete button
+function ImageWithDelete({ node, deleteNode }: NodeViewProps) {
+  return (
+    <NodeViewWrapper className="relative inline-block my-4 group">
+      <img
+        src={node.attrs.src}
+        alt={node.attrs.alt || ""}
+        className="rounded-xl max-w-full h-auto"
+      />
+      <button
+        type="button"
+        onClick={deleteNode}
+        className="absolute top-2 right-2 p-1.5 bg-black/70 hover:bg-red-600 text-white rounded-lg opacity-0 group-hover:opacity-100 transition-opacity"
+        title="Remove image"
+      >
+        <X className="w-4 h-4" />
+      </button>
+    </NodeViewWrapper>
+  );
+}
+
+// Custom Image extension with delete button
+const CustomImage = Image.extend({
+  addNodeView() {
+    return ReactNodeViewRenderer(ImageWithDelete);
+  },
+});
 
 interface RichTextEditorProps {
   content: string;
@@ -77,28 +106,6 @@ export function RichTextEditor({
     e.target.value = "";
   };
 
-  const handlePaste = async (e: React.ClipboardEvent) => {
-    const items = e.clipboardData?.items;
-    if (!items || !editor) return;
-
-    for (const item of items) {
-      if (item.type.startsWith("image/")) {
-        e.preventDefault();
-        const file = item.getAsFile();
-        if (!file) continue;
-
-        setUploading(true);
-        const url = await uploadImage(file);
-        setUploading(false);
-
-        if (url) {
-          editor.chain().focus().setImage({ src: url }).run();
-        }
-        return;
-      }
-    }
-  };
-
   const editor = useEditor({
     extensions: [
       StarterKit.configure({
@@ -115,7 +122,7 @@ export function RichTextEditor({
           class: "text-red-400 underline",
         },
       }),
-      Image.configure({
+      CustomImage.configure({
         HTMLAttributes: {
           class: "rounded-xl max-w-full h-auto my-4",
         },
@@ -323,7 +330,7 @@ export function RichTextEditor({
       {/* Help text */}
       <div className="px-4 py-2 border-t border-zinc-800 bg-zinc-900/50">
         <p className="text-xs text-zinc-600">
-          Tip: Paste images directly from clipboard or drag and drop
+          Tip: Paste images directly from clipboard. Hover over images to delete.
         </p>
       </div>
     </div>
