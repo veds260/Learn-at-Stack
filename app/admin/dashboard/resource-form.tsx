@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { X, Loader2 } from "lucide-react";
 import { createResource, updateResource, getResource } from "@/lib/actions";
+import { RichTextEditor } from "@/components/ui/rich-text-editor";
 
 interface Category {
   id: string;
@@ -105,7 +106,7 @@ export function ResourceForm({
         initial={{ opacity: 0, scale: 0.95, y: 20 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.95, y: 20 }}
-        className="w-full max-w-2xl max-h-[90vh] overflow-y-auto bg-zinc-950 border border-zinc-800 rounded-2xl"
+        className="w-full max-w-4xl max-h-[90vh] overflow-y-auto bg-zinc-950 border border-zinc-800 rounded-2xl"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
@@ -211,19 +212,17 @@ export function ResourceForm({
               />
             </div>
 
-            {/* Content (HTML) */}
+            {/* Content */}
             <div>
               <label className="block text-sm text-zinc-400 mb-2">
-                Content (HTML)
+                Content
               </label>
-              <textarea
-                value={formData.content}
-                onChange={(e) =>
-                  setFormData({ ...formData, content: e.target.value })
+              <RichTextEditor
+                content={formData.content}
+                onChange={(html) =>
+                  setFormData({ ...formData, content: html })
                 }
-                rows={8}
-                className="w-full px-4 py-3 bg-zinc-900/50 border border-zinc-800 rounded-xl text-white placeholder-zinc-600 focus:border-zinc-600 transition-colors resize-none font-mono text-sm"
-                placeholder="<h2>Section Title</h2><p>Content...</p>"
+                placeholder="Start writing your resource content..."
               />
             </div>
 

@@ -72,9 +72,9 @@ export function AdminDashboard({
             <Image
               src="/logo.png"
               alt="Stack Daily"
-              width={100}
-              height={28}
-              className="h-7 w-auto"
+              width={180}
+              height={48}
+              className="h-12 w-auto"
             />
             <span className="text-zinc-500 text-sm">/ admin</span>
           </Link>
