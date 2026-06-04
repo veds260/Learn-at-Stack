@@ -4,6 +4,7 @@ import { eq, desc } from "drizzle-orm";
 import { Header } from "@/components/ui/header";
 import { Footer } from "@/components/ui/footer";
 import { ResourceCard } from "@/components/ui/resource-card";
+import { CommunityMarquee } from "@/components/ui/community-marquee";
 
 export const dynamic = "force-dynamic";
 
@@ -47,6 +48,9 @@ export default async function HomePage() {
               Exclusive resources for members
             </p>
           </div>
+
+          {/* Community wall of real member posts about Stack */}
+          <CommunityMarquee />
 
           {/* Resources Grid */}
           {allResources.length > 0 ? (

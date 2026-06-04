@@ -62,3 +62,61 @@ input:-webkit-autofill:focus {
   -webkit-box-shadow: 0 0 0px 1000px #09090b inset;
   transition: background-color 5000s ease-in-out 0s;
 }
+
+/* Community marquee: two rows scrolling opposite ways, each looping seamlessly.
+   The track holds two copies of the list, so a -50% shift lands on the start. */
+@keyframes marquee-left {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+@keyframes marquee-right {
+  from {
+    transform: translateX(-50%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+.animate-marquee-left {
+  animation: marquee-left 70s linear infinite;
+}
+
+.animate-marquee-right {
+  animation: marquee-right 85s linear infinite;
+}
+
+/* Pause when the reader hovers anywhere on a row. */
+.marquee-row:hover .marquee-track {
+  animation-play-state: paused;
+}
+
+/* Edge fade is a transparency mask over the black page, not a color gradient. */
+.community-marquee-mask {
+  -webkit-mask-image: linear-gradient(
+    to right,
+    transparent,
+    #000 8%,
+    #000 92%,
+    transparent
+  );
+  mask-image: linear-gradient(
+    to right,
+    transparent,
+    #000 8%,
+    #000 92%,
+    transparent
+  );
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-marquee-left,
+  .animate-marquee-right {
+    animation: none;
+  }
+}
