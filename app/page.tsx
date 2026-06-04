@@ -22,6 +22,8 @@ async function getResources() {
     })
     .from(resources)
     .leftJoin(categories, eq(resources.categoryId, categories.id))
+    // Only published content is ever shown publicly.
+    .where(eq(resources.status, "published"))
     .orderBy(desc(resources.createdAt));
 
   return result;
@@ -32,12 +34,6 @@ export default async function HomePage() {
 
   return (
     <div className="min-h-screen bg-black">
-      {/* Background effects */}
-      <div className="fixed inset-0 pointer-events-none">
-        <div className="absolute top-0 left-1/4 w-96 h-96 bg-red-500/5 rounded-full blur-3xl" />
-        <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-red-500/3 rounded-full blur-3xl" />
-      </div>
-
       <Header />
 
       <main className="relative pt-32 pb-16 px-6">

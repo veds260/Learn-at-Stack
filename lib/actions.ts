@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { db } from "./db";
 import { resources, categories } from "./db/schema";
+import type { GalleryImage, ResourceStatus } from "./db/schema";
 import { eq } from "drizzle-orm";
 
 interface ResourceData {
@@ -12,9 +13,14 @@ interface ResourceData {
   content: string;
   thumbnail: string;
   type: string;
+  status: string;
   categoryId: string;
   externalUrl: string;
   videoUrl: string;
+  transcript: string;
+  eventDate: string;
+  speakers: string;
+  gallery: GalleryImage[];
   author: string;
 }
 
@@ -42,9 +48,14 @@ export async function createResource(data: ResourceData) {
     content: data.content || null,
     thumbnail: data.thumbnail || null,
     type: data.type,
+    status: data.status || "draft",
     categoryId: data.categoryId || null,
     externalUrl: data.externalUrl || null,
     videoUrl: data.videoUrl || null,
+    transcript: data.transcript || null,
+    eventDate: data.eventDate ? new Date(data.eventDate) : null,
+    speakers: data.speakers || null,
+    gallery: data.gallery?.length ? data.gallery : null,
     author: data.author || null,
   });
 
@@ -62,9 +73,14 @@ export async function updateResource(id: string, data: ResourceData) {
       content: data.content || null,
       thumbnail: data.thumbnail || null,
       type: data.type,
+      status: data.status || "draft",
       categoryId: data.categoryId || null,
       externalUrl: data.externalUrl || null,
       videoUrl: data.videoUrl || null,
+      transcript: data.transcript || null,
+      eventDate: data.eventDate ? new Date(data.eventDate) : null,
+      speakers: data.speakers || null,
+      gallery: data.gallery?.length ? data.gallery : null,
       author: data.author || null,
       updatedAt: new Date(),
     })
@@ -73,6 +89,22 @@ export async function updateResource(id: string, data: ResourceData) {
   revalidatePath("/");
   revalidatePath("/admin/dashboard");
   revalidatePath(`/resources/${data.slug}`);
+}
+
+// Approve (publish), send back to draft, or move to pending — the review gate.
+export async function setResourceStatus(id: string, status: ResourceStatus) {
+  await db
+    .update(resources)
+    .set({
+      status,
+      // Stamp the publish date when it actually goes live.
+      ...(status === "published" ? { published: new Date() } : {}),
+      updatedAt: new Date(),
+    })
+    .where(eq(resources.id, id));
+
+  revalidatePath("/");
+  revalidatePath("/admin/dashboard");
 }
 
 export async function deleteResource(id: string) {

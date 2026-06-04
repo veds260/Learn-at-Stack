@@ -1,10 +1,21 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
-import { X, Loader2, Video, FileText } from "lucide-react";
+import {
+  X,
+  Loader2,
+  Video,
+  FileText,
+  Users,
+  Calendar,
+  ImagePlus,
+  Trash2,
+  Link2,
+} from "lucide-react";
 import { createResource, updateResource, getResource } from "@/lib/actions";
 import { RichTextEditor } from "@/components/ui/rich-text-editor";
+import type { GalleryImage } from "@/lib/db/schema";
 
 interface Category {
   id: string;
@@ -19,6 +30,15 @@ interface ResourceFormProps {
   onClose: () => void;
 }
 
+const TYPE_OPTIONS = [
+  { value: "workshop", label: "Workshop" },
+  { value: "article", label: "Article" },
+  { value: "tool", label: "Tool" },
+  { value: "case_study", label: "Case Study" },
+  { value: "guide", label: "Guide" },
+  { value: "video", label: "Video" },
+];
+
 export function ResourceForm({
   categories,
   editingId,
@@ -32,11 +52,16 @@ export function ResourceForm({
     description: "",
     content: "",
     thumbnail: "",
-    type: "guide",
+    type: "article",
+    status: "draft",
     categoryId: "",
     externalUrl: "",
     author: "",
     videoUrl: "",
+    transcript: "",
+    eventDate: "",
+    speakers: "",
+    gallery: [] as GalleryImage[],
   });
 
   useEffect(() => {
@@ -51,10 +76,17 @@ export function ResourceForm({
             content: resource.content || "",
             thumbnail: resource.thumbnail || "",
             type: resource.type,
+            status: resource.status || "draft",
             categoryId: resource.categoryId || "",
             externalUrl: resource.externalUrl || "",
             author: resource.author || "",
             videoUrl: resource.videoUrl || "",
+            transcript: resource.transcript || "",
+            eventDate: resource.eventDate
+              ? new Date(resource.eventDate).toISOString().slice(0, 10)
+              : "",
+            speakers: resource.speakers || "",
+            gallery: resource.gallery || [],
           });
         }
         setFetchingResource(false);
@@ -62,12 +94,11 @@ export function ResourceForm({
     }
   }, [editingId]);
 
-  const generateSlug = (title: string) => {
-    return title
+  const generateSlug = (title: string) =>
+    title
       .toLowerCase()
       .replace(/[^a-z0-9]+/g, "-")
       .replace(/(^-|-$)/g, "");
-  };
 
   const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const title = e.target.value;
@@ -96,6 +127,12 @@ export function ResourceForm({
     }
   };
 
+  const { type } = formData;
+  const isWorkshop = type === "workshop";
+  const isTool = type === "tool";
+  const isCaseStudy = type === "case_study";
+  const hasVideo = isWorkshop || type === "video";
+
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -112,9 +149,9 @@ export function ResourceForm({
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="sticky top-0 flex items-center justify-between p-6 border-b border-zinc-800 bg-zinc-950">
+        <div className="sticky top-0 flex items-center justify-between p-6 border-b border-zinc-800 bg-zinc-950 z-10">
           <h2 className="text-xl font-light">
-            {editingId ? "Edit Resource" : "Add Resource"}
+            {editingId ? "Edit Content" : "Add Content"}
           </h2>
           <button
             onClick={onClose}
@@ -130,6 +167,42 @@ export function ResourceForm({
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="p-6 space-y-5">
+            {/* Type & Status */}
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm text-zinc-400 mb-2">Type</label>
+                <select
+                  value={formData.type}
+                  onChange={(e) =>
+                    setFormData({ ...formData, type: e.target.value })
+                  }
+                  className="w-full px-4 py-3 bg-zinc-900/50 border border-zinc-800 rounded-xl text-white focus:border-zinc-600 transition-colors"
+                >
+                  {TYPE_OPTIONS.map((o) => (
+                    <option key={o.value} value={o.value}>
+                      {o.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm text-zinc-400 mb-2">
+                  Status
+                </label>
+                <select
+                  value={formData.status}
+                  onChange={(e) =>
+                    setFormData({ ...formData, status: e.target.value })
+                  }
+                  className="w-full px-4 py-3 bg-zinc-900/50 border border-zinc-800 rounded-xl text-white focus:border-zinc-600 transition-colors"
+                >
+                  <option value="draft">Draft (hidden)</option>
+                  <option value="pending">Pending review</option>
+                  <option value="published">Published (live)</option>
+                </select>
+              </div>
+            </div>
+
             {/* Title */}
             <div>
               <label className="block text-sm text-zinc-400 mb-2">Title</label>
@@ -139,7 +212,7 @@ export function ResourceForm({
                 onChange={handleTitleChange}
                 required
                 className="w-full px-4 py-3 bg-zinc-900/50 border border-zinc-800 rounded-xl text-white placeholder-zinc-600 focus:border-zinc-600 transition-colors"
-                placeholder="Resource title"
+                placeholder="Content title"
               />
             </div>
 
@@ -154,48 +227,29 @@ export function ResourceForm({
                 }
                 required
                 className="w-full px-4 py-3 bg-zinc-900/50 border border-zinc-800 rounded-xl text-white placeholder-zinc-600 focus:border-zinc-600 transition-colors font-mono text-sm"
-                placeholder="resource-slug"
+                placeholder="content-slug"
               />
             </div>
 
-            {/* Type & Category */}
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm text-zinc-400 mb-2">Type</label>
-                <select
-                  value={formData.type}
-                  onChange={(e) =>
-                    setFormData({ ...formData, type: e.target.value })
-                  }
-                  className="w-full px-4 py-3 bg-zinc-900/50 border border-zinc-800 rounded-xl text-white focus:border-zinc-600 transition-colors"
-                >
-                  <option value="guide">Guide</option>
-                  <option value="video">Video</option>
-                  <option value="document">Document</option>
-                  <option value="link">Link</option>
-                  <option value="download">Download</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-sm text-zinc-400 mb-2">
-                  Category
-                </label>
-                <select
-                  value={formData.categoryId}
-                  onChange={(e) =>
-                    setFormData({ ...formData, categoryId: e.target.value })
-                  }
-                  className="w-full px-4 py-3 bg-zinc-900/50 border border-zinc-800 rounded-xl text-white focus:border-zinc-600 transition-colors"
-                >
-                  <option value="">No category</option>
-                  {categories.map((cat) => (
-                    <option key={cat.id} value={cat.id}>
-                      {cat.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
+            {/* Category */}
+            <div>
+              <label className="block text-sm text-zinc-400 mb-2">
+                Category
+              </label>
+              <select
+                value={formData.categoryId}
+                onChange={(e) =>
+                  setFormData({ ...formData, categoryId: e.target.value })
+                }
+                className="w-full px-4 py-3 bg-zinc-900/50 border border-zinc-800 rounded-xl text-white focus:border-zinc-600 transition-colors"
+              >
+                <option value="">No category</option>
+                {categories.map((cat) => (
+                  <option key={cat.id} value={cat.id}>
+                    {cat.name}
+                  </option>
+                ))}
+              </select>
             </div>
 
             {/* Description */}
@@ -214,8 +268,8 @@ export function ResourceForm({
               />
             </div>
 
-            {/* Video URL - only for video type */}
-            {formData.type === "video" && (
+            {/* Workshop / Video URL */}
+            {hasVideo && (
               <div>
                 <label className="block text-sm text-zinc-400 mb-2">
                   <Video className="w-4 h-4 inline mr-2" />
@@ -228,30 +282,116 @@ export function ResourceForm({
                     setFormData({ ...formData, videoUrl: e.target.value })
                   }
                   className="w-full px-4 py-3 bg-zinc-900/50 border border-zinc-800 rounded-xl text-white placeholder-zinc-600 focus:border-zinc-600 transition-colors"
-                  placeholder="https://youtube.com/watch?v=... or https://vimeo.com/..."
+                  placeholder="https://youtube.com/watch?v=..."
                 />
                 <p className="text-xs text-zinc-600 mt-2">
-                  Paste a YouTube, Vimeo, or direct video URL. The video will be embedded on the resource page.
+                  Upload the workshop replay to YouTube, then paste the link. It
+                  embeds at the top of the page.
                 </p>
               </div>
             )}
 
-            {/* Content - for guides, documents, and other types */}
-            {formData.type !== "link" && (
+            {/* Workshop meta: date + speakers */}
+            {isWorkshop && (
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm text-zinc-400 mb-2">
+                    <Calendar className="w-4 h-4 inline mr-2" />
+                    Workshop date
+                  </label>
+                  <input
+                    type="date"
+                    value={formData.eventDate}
+                    onChange={(e) =>
+                      setFormData({ ...formData, eventDate: e.target.value })
+                    }
+                    className="w-full px-4 py-3 bg-zinc-900/50 border border-zinc-800 rounded-xl text-white focus:border-zinc-600 transition-colors"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm text-zinc-400 mb-2">
+                    <Users className="w-4 h-4 inline mr-2" />
+                    Speakers
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.speakers}
+                    onChange={(e) =>
+                      setFormData({ ...formData, speakers: e.target.value })
+                    }
+                    className="w-full px-4 py-3 bg-zinc-900/50 border border-zinc-800 rounded-xl text-white placeholder-zinc-600 focus:border-zinc-600 transition-colors"
+                    placeholder="@elizacreatez, @auntiepaca"
+                  />
+                </div>
+              </div>
+            )}
+
+            {/* Tool external URL (prominent) */}
+            {isTool && (
               <div>
                 <label className="block text-sm text-zinc-400 mb-2">
-                  <FileText className="w-4 h-4 inline mr-2" />
-                  {formData.type === "video" ? "Additional Notes (optional)" : "Content"}
+                  <Link2 className="w-4 h-4 inline mr-2" />
+                  Tool link
                 </label>
-                <RichTextEditor
-                  content={formData.content}
-                  onChange={(html) =>
-                    setFormData({ ...formData, content: html })
+                <input
+                  type="url"
+                  value={formData.externalUrl}
+                  onChange={(e) =>
+                    setFormData({ ...formData, externalUrl: e.target.value })
                   }
-                  placeholder={formData.type === "video"
-                    ? "Add any additional notes, timestamps, or description for the video..."
-                    : "Start writing your resource content... Use the image button to add visuals."
+                  className="w-full px-4 py-3 bg-zinc-900/50 border border-zinc-800 rounded-xl text-white placeholder-zinc-600 focus:border-zinc-600 transition-colors"
+                  placeholder="https://... (where members can use the tool)"
+                />
+              </div>
+            )}
+
+            {/* Case study screenshot gallery */}
+            {isCaseStudy && (
+              <GalleryUploader
+                gallery={formData.gallery}
+                onChange={(gallery) => setFormData({ ...formData, gallery })}
+              />
+            )}
+
+            {/* Content (article body) */}
+            <div>
+              <label className="block text-sm text-zinc-400 mb-2">
+                <FileText className="w-4 h-4 inline mr-2" />
+                {isWorkshop
+                  ? "Workshop write-up"
+                  : isTool
+                  ? "How to use it (optional)"
+                  : isCaseStudy
+                  ? "The story"
+                  : "Content"}
+              </label>
+              <RichTextEditor
+                content={formData.content}
+                onChange={(html) =>
+                  setFormData({ ...formData, content: html })
+                }
+                placeholder={
+                  isWorkshop
+                    ? "The article breaking down the workshop..."
+                    : "Start writing..."
+                }
+              />
+            </div>
+
+            {/* Workshop transcript (source material, collapsible on public page) */}
+            {isWorkshop && (
+              <div>
+                <label className="block text-sm text-zinc-400 mb-2">
+                  Transcript (source, optional)
+                </label>
+                <textarea
+                  value={formData.transcript}
+                  onChange={(e) =>
+                    setFormData({ ...formData, transcript: e.target.value })
                   }
+                  rows={4}
+                  className="w-full px-4 py-3 bg-zinc-900/50 border border-zinc-800 rounded-xl text-white placeholder-zinc-600 focus:border-zinc-600 transition-colors resize-none font-mono text-xs"
+                  placeholder="Paste the Fathom transcript here. Shown in a collapsible section on the workshop page."
                 />
               </div>
             )}
@@ -272,21 +412,23 @@ export function ResourceForm({
               />
             </div>
 
-            {/* External URL */}
-            <div>
-              <label className="block text-sm text-zinc-400 mb-2">
-                External URL (optional)
-              </label>
-              <input
-                type="url"
-                value={formData.externalUrl}
-                onChange={(e) =>
-                  setFormData({ ...formData, externalUrl: e.target.value })
-                }
-                className="w-full px-4 py-3 bg-zinc-900/50 border border-zinc-800 rounded-xl text-white placeholder-zinc-600 focus:border-zinc-600 transition-colors"
-                placeholder="https://notion.so/..."
-              />
-            </div>
+            {/* External URL (non-tool types) */}
+            {!isTool && (
+              <div>
+                <label className="block text-sm text-zinc-400 mb-2">
+                  External URL (optional)
+                </label>
+                <input
+                  type="url"
+                  value={formData.externalUrl}
+                  onChange={(e) =>
+                    setFormData({ ...formData, externalUrl: e.target.value })
+                  }
+                  className="w-full px-4 py-3 bg-zinc-900/50 border border-zinc-800 rounded-xl text-white placeholder-zinc-600 focus:border-zinc-600 transition-colors"
+                  placeholder="https://notion.so/..."
+                />
+              </div>
+            )}
 
             {/* Author */}
             <div>
@@ -322,9 +464,9 @@ export function ResourceForm({
                     Saving...
                   </>
                 ) : editingId ? (
-                  "Update Resource"
+                  "Update"
                 ) : (
-                  "Create Resource"
+                  "Create"
                 )}
               </button>
             </div>
@@ -332,5 +474,118 @@ export function ResourceForm({
         )}
       </motion.div>
     </motion.div>
+  );
+}
+
+// Multi-image uploader for case study screenshots (uses /api/upload → Cloudinary).
+function GalleryUploader({
+  gallery,
+  onChange,
+}: {
+  gallery: GalleryImage[];
+  onChange: (gallery: GalleryImage[]) => void;
+}) {
+  const [uploading, setUploading] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  const handleFiles = async (files: FileList | null) => {
+    if (!files || files.length === 0) return;
+    setUploading(true);
+    try {
+      const uploaded: GalleryImage[] = [];
+      for (const file of Array.from(files)) {
+        const fd = new FormData();
+        fd.append("file", file);
+        const res = await fetch("/api/upload", { method: "POST", body: fd });
+        if (res.ok) {
+          const { url } = await res.json();
+          if (url) uploaded.push({ url, caption: "" });
+        }
+      }
+      onChange([...gallery, ...uploaded]);
+    } catch (err) {
+      console.error("Gallery upload failed:", err);
+    } finally {
+      setUploading(false);
+      if (inputRef.current) inputRef.current.value = "";
+    }
+  };
+
+  const updateCaption = (idx: number, caption: string) => {
+    const next = [...gallery];
+    next[idx] = { ...next[idx], caption };
+    onChange(next);
+  };
+
+  const remove = (idx: number) => {
+    onChange(gallery.filter((_, i) => i !== idx));
+  };
+
+  return (
+    <div>
+      <label className="block text-sm text-zinc-400 mb-2">
+        <ImagePlus className="w-4 h-4 inline mr-2" />
+        Screenshots
+      </label>
+
+      {gallery.length > 0 && (
+        <div className="grid grid-cols-2 gap-3 mb-3">
+          {gallery.map((img, idx) => (
+            <div
+              key={idx}
+              className="relative group border border-zinc-800 rounded-xl overflow-hidden bg-zinc-900/50"
+            >
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={img.url}
+                alt={img.caption || `Screenshot ${idx + 1}`}
+                className="w-full h-32 object-cover"
+              />
+              <button
+                type="button"
+                onClick={() => remove(idx)}
+                className="absolute top-2 right-2 p-1.5 bg-black/70 text-white rounded-lg opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-500/80"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+              </button>
+              <input
+                type="text"
+                value={img.caption || ""}
+                onChange={(e) => updateCaption(idx, e.target.value)}
+                placeholder="Caption (optional)"
+                className="w-full px-3 py-2 bg-zinc-950/80 border-t border-zinc-800 text-xs text-white placeholder-zinc-600 focus:outline-none"
+              />
+            </div>
+          ))}
+        </div>
+      )}
+
+      <input
+        ref={inputRef}
+        type="file"
+        accept="image/*"
+        multiple
+        onChange={(e) => handleFiles(e.target.files)}
+        className="hidden"
+      />
+      <button
+        type="button"
+        onClick={() => inputRef.current?.click()}
+        disabled={uploading}
+        className="flex items-center gap-2 px-4 py-2.5 w-full justify-center border border-dashed border-zinc-700 rounded-xl text-sm text-zinc-400 hover:text-white hover:border-zinc-500 transition-colors disabled:opacity-50"
+      >
+        {uploading ? (
+          <>
+            <Loader2 className="w-4 h-4 animate-spin" />
+            Uploading...
+          </>
+        ) : (
+          <>
+            <ImagePlus className="w-4 h-4" />
+            Add screenshots
+          </>
+        )}
+      </button>
+    </div>
   );
 }

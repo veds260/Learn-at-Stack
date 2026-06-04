@@ -1,10 +1,10 @@
 import { db } from "@/lib/db";
 import { resources, categories } from "@/lib/db/schema";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { notFound } from "next/navigation";
 import { Header } from "@/components/ui/header";
 import { Footer } from "@/components/ui/footer";
-import { ArrowLeft, Calendar, User } from "lucide-react";
+import { ArrowLeft, Calendar, User, Users, ExternalLink } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import { ShareButton } from "./share-button";
@@ -25,6 +25,10 @@ async function getResource(slug: string) {
       type: resources.type,
       externalUrl: resources.externalUrl,
       videoUrl: resources.videoUrl,
+      transcript: resources.transcript,
+      eventDate: resources.eventDate,
+      speakers: resources.speakers,
+      gallery: resources.gallery,
       author: resources.author,
       published: resources.published,
       categoryName: categories.name,
@@ -32,7 +36,8 @@ async function getResource(slug: string) {
     })
     .from(resources)
     .leftJoin(categories, eq(resources.categoryId, categories.id))
-    .where(eq(resources.slug, slug))
+    // Public pages only ever serve published content.
+    .where(and(eq(resources.slug, slug), eq(resources.status, "published")))
     .limit(1);
 
   return resource;
@@ -67,13 +72,12 @@ export default async function ResourcePage({ params }: PageProps) {
     notFound();
   }
 
+  const isWorkshop = resource.type === "workshop";
+  const hasVideo = isWorkshop || resource.type === "video";
+  const gallery = resource.gallery || [];
+
   return (
     <div className="min-h-screen bg-black">
-      {/* Background effects */}
-      <div className="fixed inset-0 pointer-events-none">
-        <div className="absolute top-0 left-1/4 w-96 h-96 bg-red-500/5 rounded-full blur-3xl" />
-      </div>
-
       <Header />
 
       <main className="relative pt-28 pb-16 px-6">
@@ -118,10 +122,18 @@ export default async function ResourcePage({ params }: PageProps) {
                   {resource.author}
                 </span>
               )}
-              {resource.published && (
+              {resource.speakers && (
+                <span className="flex items-center gap-1.5">
+                  <Users className="w-4 h-4" />
+                  {resource.speakers}
+                </span>
+              )}
+              {(resource.eventDate || resource.published) && (
                 <span className="flex items-center gap-1.5">
                   <Calendar className="w-4 h-4" />
-                  {new Date(resource.published).toLocaleDateString("en-US", {
+                  {new Date(
+                    resource.eventDate || resource.published!
+                  ).toLocaleDateString("en-US", {
                     month: "long",
                     day: "numeric",
                     year: "numeric",
@@ -144,8 +156,8 @@ export default async function ResourcePage({ params }: PageProps) {
             </div>
           )}
 
-          {/* Video Player - for video type resources */}
-          {resource.type === "video" && resource.videoUrl && (() => {
+          {/* Video Player - for workshop and video type resources */}
+          {hasVideo && resource.videoUrl && (() => {
             const embedUrl = getVideoEmbedUrl(resource.videoUrl);
             if (!embedUrl) return null;
 
@@ -197,6 +209,63 @@ export default async function ResourcePage({ params }: PageProps) {
                 prose-pre:bg-zinc-900 prose-pre:border prose-pre:border-zinc-800"
               dangerouslySetInnerHTML={{ __html: resource.content }}
             />
+          )}
+
+          {/* Tool CTA */}
+          {resource.type === "tool" && resource.externalUrl && (
+            <a
+              href={resource.externalUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 mt-8 px-5 py-3 bg-white text-black rounded-xl text-sm font-medium hover:bg-zinc-200 transition-colors"
+            >
+              Open the tool
+              <ExternalLink className="w-4 h-4" />
+            </a>
+          )}
+
+          {/* Case study screenshots */}
+          {gallery.length > 0 && (
+            <div className="mt-12 space-y-6">
+              <h2 className="text-2xl font-light tracking-tight text-white">
+                Screenshots
+              </h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {gallery.map((img, idx) => (
+                  <figure
+                    key={idx}
+                    className="overflow-hidden rounded-2xl border border-zinc-800/50 bg-zinc-900"
+                  >
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={img.url}
+                      alt={img.caption || `Screenshot ${idx + 1}`}
+                      className="w-full object-cover"
+                    />
+                    {img.caption && (
+                      <figcaption className="px-4 py-3 text-sm text-zinc-500 border-t border-zinc-800/50">
+                        {img.caption}
+                      </figcaption>
+                    )}
+                  </figure>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Workshop transcript (collapsible) */}
+          {isWorkshop && resource.transcript && (
+            <details className="mt-12 group rounded-2xl border border-zinc-800/50 bg-zinc-900/30">
+              <summary className="cursor-pointer list-none px-5 py-4 text-sm font-medium text-zinc-300 hover:text-white transition-colors flex items-center justify-between">
+                <span>Full transcript</span>
+                <span className="text-zinc-600 group-open:rotate-180 transition-transform">
+                  ▾
+                </span>
+              </summary>
+              <div className="px-5 pb-5 pt-1 text-sm text-zinc-400 leading-relaxed whitespace-pre-wrap border-t border-zinc-800/50">
+                {resource.transcript}
+              </div>
+            </details>
           )}
         </article>
       </main>

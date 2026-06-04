@@ -15,6 +15,8 @@ async function getResources() {
       slug: resources.slug,
       description: resources.description,
       type: resources.type,
+      status: resources.status,
+      submittedBy: resources.submittedBy,
       categoryName: categories.name,
       createdAt: resources.createdAt,
     })
