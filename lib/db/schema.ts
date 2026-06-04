@@ -41,6 +41,9 @@ export type ResourceStatus = (typeof RESOURCE_STATUSES)[number];
 // A single screenshot/image in a case study (or any) gallery.
 export type GalleryImage = { url: string; caption?: string };
 
+// An embedded X/Twitter post (clip, tool demo, win). url is the tweet link.
+export type EmbedItem = { url: string; caption?: string };
+
 export const resources = pgTable("resources", {
   id: uuid("id").defaultRandom().primaryKey(),
   title: varchar("title", { length: 255 }).notNull(),
@@ -62,6 +65,8 @@ export const resources = pgTable("resources", {
   speakers: text("speakers"),
   // Case-study (and general) screenshot gallery.
   gallery: jsonb("gallery").$type<GalleryImage[]>(),
+  // Embedded X/Twitter posts (workshop clips, tool demos, win posts).
+  embeds: jsonb("embeds").$type<EmbedItem[]>(),
   author: varchar("author", { length: 100 }),
   // Who created the item (e.g. "claude" for ingested drafts, else admin name).
   submittedBy: varchar("submitted_by", { length: 100 }),

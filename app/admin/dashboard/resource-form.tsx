@@ -12,10 +12,12 @@ import {
   ImagePlus,
   Trash2,
   Link2,
+  Plus,
+  Twitter,
 } from "lucide-react";
 import { createResource, updateResource, getResource } from "@/lib/actions";
 import { RichTextEditor } from "@/components/ui/rich-text-editor";
-import type { GalleryImage } from "@/lib/db/schema";
+import type { GalleryImage, EmbedItem } from "@/lib/db/schema";
 
 interface Category {
   id: string;
@@ -62,6 +64,7 @@ export function ResourceForm({
     eventDate: "",
     speakers: "",
     gallery: [] as GalleryImage[],
+    embeds: [] as EmbedItem[],
   });
 
   useEffect(() => {
@@ -87,6 +90,7 @@ export function ResourceForm({
               : "",
             speakers: resource.speakers || "",
             gallery: resource.gallery || [],
+            embeds: resource.embeds || [],
           });
         }
         setFetchingResource(false);
@@ -353,6 +357,12 @@ export function ResourceForm({
               />
             )}
 
+            {/* Embedded X posts (clips, tool demos, win posts) */}
+            <EmbedsEditor
+              embeds={formData.embeds}
+              onChange={(embeds) => setFormData({ ...formData, embeds })}
+            />
+
             {/* Content (article body) */}
             <div>
               <label className="block text-sm text-zinc-400 mb-2">
@@ -586,6 +596,80 @@ function GalleryUploader({
           </>
         )}
       </button>
+    </div>
+  );
+}
+
+// Repeater for embedding X/Twitter posts (workshop clips, tool demos, wins).
+function EmbedsEditor({
+  embeds,
+  onChange,
+}: {
+  embeds: EmbedItem[];
+  onChange: (embeds: EmbedItem[]) => void;
+}) {
+  const update = (idx: number, patch: Partial<EmbedItem>) => {
+    const next = [...embeds];
+    next[idx] = { ...next[idx], ...patch };
+    onChange(next);
+  };
+  const remove = (idx: number) => onChange(embeds.filter((_, i) => i !== idx));
+  const add = () => onChange([...embeds, { url: "", caption: "" }]);
+
+  return (
+    <div>
+      <label className="block text-sm text-zinc-400 mb-2">
+        <Twitter className="w-4 h-4 inline mr-2" />
+        X posts to embed
+      </label>
+
+      {embeds.length > 0 && (
+        <div className="space-y-2 mb-3">
+          {embeds.map((e, idx) => (
+            <div
+              key={idx}
+              className="flex items-center gap-2 p-2 bg-zinc-900/50 border border-zinc-800 rounded-xl"
+            >
+              <div className="flex-1 space-y-2">
+                <input
+                  type="url"
+                  value={e.url}
+                  onChange={(ev) => update(idx, { url: ev.target.value })}
+                  placeholder="https://x.com/user/status/123..."
+                  className="w-full px-3 py-2 bg-zinc-950/50 border border-zinc-800 rounded-lg text-sm text-white placeholder-zinc-600 focus:border-zinc-600 transition-colors font-mono"
+                />
+                <input
+                  type="text"
+                  value={e.caption || ""}
+                  onChange={(ev) => update(idx, { caption: ev.target.value })}
+                  placeholder="Caption (optional)"
+                  className="w-full px-3 py-2 bg-zinc-950/50 border border-zinc-800 rounded-lg text-sm text-white placeholder-zinc-600 focus:border-zinc-600 transition-colors"
+                />
+              </div>
+              <button
+                type="button"
+                onClick={() => remove(idx)}
+                className="p-2 text-zinc-400 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors"
+              >
+                <Trash2 className="w-4 h-4" />
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+
+      <button
+        type="button"
+        onClick={add}
+        className="flex items-center gap-2 px-4 py-2.5 w-full justify-center border border-dashed border-zinc-700 rounded-xl text-sm text-zinc-400 hover:text-white hover:border-zinc-500 transition-colors"
+      >
+        <Plus className="w-4 h-4" />
+        Add X post
+      </button>
+      <p className="text-xs text-zinc-600 mt-2">
+        Paste X post links. They render as embedded posts, so workshop clips and
+        tool demos show up natively and your clippers get a home.
+      </p>
     </div>
   );
 }

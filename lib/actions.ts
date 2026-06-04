@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { db } from "./db";
 import { resources, categories } from "./db/schema";
-import type { GalleryImage, ResourceStatus } from "./db/schema";
+import type { GalleryImage, EmbedItem, ResourceStatus } from "./db/schema";
 import { eq } from "drizzle-orm";
 
 interface ResourceData {
@@ -21,6 +21,7 @@ interface ResourceData {
   eventDate: string;
   speakers: string;
   gallery: GalleryImage[];
+  embeds: EmbedItem[];
   author: string;
 }
 
@@ -56,6 +57,7 @@ export async function createResource(data: ResourceData) {
     eventDate: data.eventDate ? new Date(data.eventDate) : null,
     speakers: data.speakers || null,
     gallery: data.gallery?.length ? data.gallery : null,
+    embeds: data.embeds?.length ? data.embeds : null,
     author: data.author || null,
   });
 
@@ -81,6 +83,7 @@ export async function updateResource(id: string, data: ResourceData) {
       eventDate: data.eventDate ? new Date(data.eventDate) : null,
       speakers: data.speakers || null,
       gallery: data.gallery?.length ? data.gallery : null,
+      embeds: data.embeds?.length ? data.embeds : null,
       author: data.author || null,
       updatedAt: new Date(),
     })

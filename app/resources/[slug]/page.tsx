@@ -8,6 +8,7 @@ import { ArrowLeft, Calendar, User, Users, ExternalLink } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import { ShareButton } from "./share-button";
+import { TweetEmbeds } from "@/components/ui/tweet-embeds";
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -29,6 +30,7 @@ async function getResource(slug: string) {
       eventDate: resources.eventDate,
       speakers: resources.speakers,
       gallery: resources.gallery,
+      embeds: resources.embeds,
       author: resources.author,
       published: resources.published,
       categoryName: categories.name,
@@ -75,6 +77,13 @@ export default async function ResourcePage({ params }: PageProps) {
   const isWorkshop = resource.type === "workshop";
   const hasVideo = isWorkshop || resource.type === "video";
   const gallery = resource.gallery || [];
+  const embeds = resource.embeds || [];
+  const embedsHeading =
+    resource.type === "workshop"
+      ? "Clips & posts"
+      : resource.type === "case_study"
+      ? "The receipts"
+      : "Related posts";
 
   return (
     <div className="min-h-screen bg-black">
@@ -251,6 +260,11 @@ export default async function ResourcePage({ params }: PageProps) {
                 ))}
               </div>
             </div>
+          )}
+
+          {/* Embedded X posts (workshop clips, tool demos, win posts) */}
+          {embeds.length > 0 && (
+            <TweetEmbeds embeds={embeds} heading={embedsHeading} />
           )}
 
           {/* Workshop transcript (collapsible) */}

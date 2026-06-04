@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { resources, categories, RESOURCE_TYPES } from "@/lib/db/schema";
-import type { GalleryImage, ResourceType } from "@/lib/db/schema";
+import type { GalleryImage, EmbedItem, ResourceType } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
 
 // Claude ingest endpoint.
@@ -25,6 +25,7 @@ import { eq } from "drizzle-orm";
 //   "speakers": "@elizacreatez, @auntiepaca",
 //   "eventDate": "2026-06-02",
 //   "gallery": [{ "url": "https://…", "caption": "…" }],
+//   "embeds": [{ "url": "https://x.com/…/status/…", "caption": "…" }],
 //   "thumbnail": "https://…",
 //   "externalUrl": "https://…",           // for tools
 //   "author": "Stack Daily",
@@ -120,6 +121,21 @@ export async function POST(request: NextRequest) {
     if (cleaned.length) gallery = cleaned;
   }
 
+  // Embeds: accept array of {url, caption?} pointing at X/Twitter posts.
+  let embeds: EmbedItem[] | null = null;
+  if (Array.isArray(body.embeds)) {
+    const cleaned = body.embeds
+      .filter(
+        (e): e is { url: string; caption?: string } =>
+          !!e && typeof (e as { url?: unknown }).url === "string"
+      )
+      .map((e) => ({
+        url: e.url,
+        ...(typeof e.caption === "string" ? { caption: e.caption } : {}),
+      }));
+    if (cleaned.length) embeds = cleaned;
+  }
+
   let eventDate: Date | null = null;
   const eventDateStr = str(body.eventDate);
   if (eventDateStr) {
@@ -149,6 +165,7 @@ export async function POST(request: NextRequest) {
       eventDate,
       speakers: str(body.speakers),
       gallery,
+      embeds,
       author: str(body.author) ?? "Stack Daily",
       submittedBy: "claude",
     })
