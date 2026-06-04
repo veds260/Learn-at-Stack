@@ -5,6 +5,7 @@ import { Header } from "@/components/ui/header";
 import { Footer } from "@/components/ui/footer";
 import { ResourceCard } from "@/components/ui/resource-card";
 import { CommunityMarquee } from "@/components/ui/community-marquee";
+import { StatsBand } from "@/components/ui/stats-band";
 
 export const dynamic = "force-dynamic";
 
@@ -48,6 +49,9 @@ export default async function HomePage() {
               Exclusive resources for members
             </p>
           </div>
+
+          {/* Community at a glance */}
+          <StatsBand />
 
           {/* Community wall of real member posts about Stack */}
           <CommunityMarquee />

@@ -25,10 +25,15 @@ function PostCard({ post }: { post: CommunityPost }) {
           className="w-9 h-9 rounded-full object-cover bg-zinc-800"
           loading="lazy"
         />
-        <div className="min-w-0">
+        <div className="min-w-0 flex-1">
           <p className="text-sm font-medium text-white truncate">{post.name}</p>
           <p className="text-xs text-zinc-500 truncate">@{post.handle}</p>
         </div>
+        {post.tag && (
+          <span className="shrink-0 rounded-full border border-red-500/20 bg-red-500/10 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide text-red-400/90">
+            {post.tag}
+          </span>
+        )}
       </div>
       <p className="text-sm text-zinc-300 leading-relaxed line-clamp-4">
         {post.text}
